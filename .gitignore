@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.agents/
+.claude/
+progresso_alunos/
+acessos_participantes.csv
