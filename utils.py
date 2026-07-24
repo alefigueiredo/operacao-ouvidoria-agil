@@ -402,9 +402,9 @@ def avaliar_resposta_defensiva(prompt_sistema, entrada_hacker):
 # =====================================================================
 # FASE 4: VALIDAÇÃO MULTI-SEÇÃO DO RELATÓRIO EXECUTIVO
 # =====================================================================
-def validar_relatorio_fase4_rigoroso(relatorio_md, total_alta_esperado=6):
-    if not relatorio_md or len(relatorio_md.strip()) < 300:
-        return False, "O relatório é muito curto. Escreva um documento corporativo em Markdown com pelo menos 300 caracteres."
+def validar_relatorio_fase4_rigoroso(relatorio_md, matricula_str, total_alta_esperado=6):
+    if not relatorio_md or len(relatorio_md.strip()) < 350:
+        return False, "O relatório é muito curto. Escreva um documento executivo em Markdown com pelo menos 350 caracteres."
         
     p_lower = relatorio_md.lower()
     
@@ -415,21 +415,30 @@ def validar_relatorio_fase4_rigoroso(relatorio_md, total_alta_esperado=6):
         return False, "Falta Tabela de Dados: O relatório deve conter pelo menos uma Tabela em Markdown (| Coluna 1 | Coluna 2 |) consolidando os chamados."
 
     if "6" not in relatorio_md and "seis" not in p_lower:
-        return False, f"Inconsistência Numérica: O relatório deve citar a quantidade exata de {total_alta_esperado} chamados de ALTA prioridade calculados na Fase 2."
+        return False, f"Inconsistência Numérica: O relatório deve citar a quantidade exata de {total_alta_esperado} chamados de ALTA prioridade calculados na sua triagem da Fase 2."
 
-    bairros_ok = any(b in p_lower for b in ["industrial", "flores", "centro", "alto", "vila nova", "santa ifigenia"])
-    if not bairros_ok:
-        return False, "Inconsistência Geográfica: Cite os bairros afetados reais identificados nos chamados."
+    # Validar bairros específicos sorteados para a Matrícula do aluno
+    chamados_est = obter_chamados_estudante(matricula_str)
+    bairros_aluno = set(ch["bairro"].lower() for ch in chamados_est if ch.get("prio_correta") == "ALTA")
+    bairros_encontrados = [b for b in bairros_aluno if b in p_lower]
+    if not bairros_encontrados:
+        return False, f"Inconsistência de Matrícula: Seu relatório não inclui os bairros afetados reais dos seus chamados de ALTA prioridade (ex: {', '.join(list(bairros_aluno)[:3])}). Não cole textos genéricos!"
+
+    if "decreto" not in p_lower and "4.820" not in p_lower and "calamidade" not in p_lower:
+        return False, "Falta Embasamento Jurídico: O relatório deve fundamentar as ações no Decreto Municipal de Calamidade nº 4.820/2026."
+
+    if "r$" not in p_lower and "custo" not in p_lower and "orçamento" not in p_lower and "orcamento" not in p_lower:
+        return False, "Falta Estimativa Financeira: O relatório deve calcular a estimativa de custos de contingência (Ex: R$ 90.000,00 ou estimativa orçamentária por ocorrência)."
 
     orgaos_ok = any(o in p_lower for o in ["defesa civil", "energia", "bombeiro", "obras", "prefeitura"])
     if not orgaos_ok:
-        return False, "Plano de Ação Incompleto: O plano emergencial deve atribuir responsabilidades a órgãos municipais (Defesa Civil, Concessionária de Energia, Secretaria de Obras)."
+        return False, "Plano de Ação Incompleto: Atribua responsabilidades a órgãos municipais (Defesa Civil, Concessionária de Energia, Secretaria de Obras)."
 
     imprensa_ok = any(i in p_lower for i in ["imprensa", "prefeito", "comunicado", "nota oficial", "boletim"])
     if not imprensa_ok:
         return False, "Falta Nota de Imprensa: Inclua a Nota Oficial que o Prefeito lerá na coletiva de imprensa."
 
-    return True, "Relatório executivo aprovado com distinção! Todas as 4 seções estratégicas foram validadas com sucesso."
+    return True, "Relatório executivo validado com sucesso contra os dados individuais da sua Matrícula! Todas as seções estratégicas, jurídicas e financeiras foram aprovadas."
 
 # =====================================================================
 # FASES DE NIVELAMENTO E AQUECIMENTO (REVISÃO DO CURSO)
@@ -473,59 +482,71 @@ def gerar_hash_sha256(texto):
     """Gera o hash SHA-256 em hexadecimal a partir de uma string."""
     return hashlib.sha256(str(texto).encode('utf-8')).hexdigest()
 
-def calcular_checksum_matricula(matricula_str):
-    """Soma dos dígitos da matrícula para validação anti-cola na Fase 1."""
-    digits = [int(c) for c in matricula_str if c.isdigit()]
-    return sum(digits) if digits else 15
-
-def validar_quiz_fase0a(q1, q2, q3, q4):
+def validar_quiz_fase0a(q1, q2, q3, q4, q5, q6):
     """
-    Valida as respostas do Quiz de Fundamentos de GenAI (Fase 0A).
+    Valida as respostas do Quiz de Fundamentos de GenAI & Ética (6 Questões Estudo de Caso).
     """
     erros = []
-    if q1 != "Discriminativos classificam e preveem rótulos; Generativos criam novos conteúdos autorregressivamente (texto, imagem, código)." and "classificam e preveem" not in str(q1):
-        erros.append("Q1: Incorreta. Revise a diferença entre Modelos Discriminativos e Generativos.")
-    if q2 != "Fine-Tuning com dados históricos viciados da própria empresa que refletiam contratações passadas excludentes." and "Fine-Tuning" not in str(q2):
-        erros.append("Q2: Incorreta. Lembre-se do Estudo de Caso RH (Tribunal da IA): o viés veio do Fine-Tuning com dados passados da empresa.")
-    if q3 != "Ethics by Design (incorporar regras éticas, transparência e segurança em todas as fases do ciclo de vida da IA)." and "Ethics by Design" not in str(q3):
-        erros.append("Q3: Incorreta. A abordagem recomendada pelo serviço público é 'Ethics by Design'.")
-    if q4 != "Temperatura controla a aleatoriedade/criatividade; Top-P (Nucleus Sampling) filtra a probabilidade acumulada dos tokens." and "aleatoriedade/criatividade" not in str(q4):
-        erros.append("Q4: Incorreta. Relembre o papel dos parâmetros Temperatura e Top-P no Vertex AI Studio / Gemini.")
+    if "classificam e preveem" not in str(q1):
+        erros.append("Q1 (Modelos): Incorreta. Revise a diferença entre Modelos Discriminativos e Generativos.")
+    if "Fine-Tuning" not in str(q2):
+        erros.append("Q2 (Viés no RH): Incorreta. O viés decorre do Fine-Tuning com dados históricos viciados da própria empresa.")
+    if "Ethics by Design" not in str(q3):
+        erros.append("Q3 (Governança): Incorreta. A diretriz ética recomendada para o setor público é 'Ethics by Design'.")
+    if "aleatoriedade/criatividade" not in str(q4):
+        erros.append("Q4 (Parâmetros): Incorreta. Temperatura ajusta a aleatoriedade/criatividade e Top-P filtra os tokens.")
+    if "mascaramento" not in str(q5).lower() and "lgpd" not in str(q5).lower() and "anonimiz" not in str(q5).lower():
+        erros.append("Q5 (Privacidade LGPD): Incorreta. Dados sensíveis de cidadãos devem ser mascarados ou anonimizados antes do envio a LLMs comerciais.")
+    if "supervisão humana" not in str(q6).lower() and "human-in-the-loop" not in str(q6).lower() and "supervisao" not in str(q6).lower():
+        erros.append("Q6 (Hallucination & Responsabilidade): Incorreta. Decisões administrativas da ouvidoria exigem supervisão humana (Human-in-the-Loop).")
 
     if erros:
         return False, "Algumas respostas precisam de ajuste:\n• " + "\n• ".join(erros)
-    return True, "Parabéns! Você demonstrou domínio completo dos Fundamentos de IA Generativa e Ética Pública."
+    return True, "Parabéns! Você demonstrou domínio completo dos 6 Estudos de Caso de IA Generativa e Ética Pública."
 
 def validar_prompt_fase0b(prompt_aluno):
     """
-    Valida se o prompt estruturado contém os elementos do formato RTF/CRISP.
+    Valida o prompt no formato RTF/CRISP exigindo alta qualidade (min 250 chars),
+    parâmetros de IA, variáveis dinâmicas e regras negativas.
     """
-    if not prompt_aluno or len(prompt_aluno.strip()) < 120:
-        return False, "O prompt é muito curto. Um prompt estruturado no padrão RTF/CRISP deve ter pelo menos 120 caracteres."
+    if not prompt_aluno or len(prompt_aluno.strip()) < 250:
+        return False, f"Prompt Insuficiente ({len(prompt_aluno.strip()) if prompt_aluno else 0}/250 caracteres): Um prompt corporativo no padrão RTF/CRISP deve ter no mínimo 250 caracteres com instruções detalhadas."
         
     p_lower = prompt_aluno.lower()
     
-    tem_persona = any(w in p_lower for w in ["aja como", "você é", "voce e", "papel", "persona", "especialista"])
+    tem_persona = any(w in p_lower for w in ["aja como", "você é", "voce e", "papel", "persona", "especialista", "redator", "operador"])
     if not tem_persona:
-        return False, "Falta a Persona (Role): Especifique o papel da IA (Ex: 'Aja como um redator técnico da prefeitura...')."
+        return False, "Falta a Persona (Role): Especifique o papel operacional da IA (Ex: 'Aja como um redator técnico da prefeitura...')."
 
-    tem_tarefa = any(w in p_lower for w in ["resuma", "sintetize", "extraia", "elabore", "analise"])
+    tem_tarefa = any(w in p_lower for w in ["resuma", "sintetize", "extraia", "elabore", "analise", "processe"])
     if not tem_tarefa:
-        return False, "Falta a Tarefa (Task): Instrua claramente o que a IA deve realizar (Ex: 'Resuma a ata legislativa...')."
+        return False, "Falta a Tarefa (Task): Instrua claramente a ação a ser executada (Ex: 'Resuma a ata legislativa...')."
 
     tem_formato = any(w in p_lower for w in ["formato", "tabela", "bullet", "tópicos", "topicos", "markdown", "json"])
     if not tem_formato:
-        return False, "Falta o Formato (Format): Especifique a estrutura de saída esperada (Ex: 'Apresente em tópicos Markdown...')."
+        return False, "Falta o Formato (Format): Especifique a estrutura de saída (Ex: 'Apresente em tópicos Markdown...')."
 
-    tem_delimitador = any(w in prompt_aluno for w in ["###", '"""', "---", "```", "[TEXTO]"])
+    tem_delimitador = any(w in prompt_aluno for w in ["###", '"""', "---", "```", "[TEXTO]", "<input>"])
     if not tem_delimitador:
         return False, "Falta o Delimitador: Utilize marcas claras (como ### ou ---) para isolar o texto de entrada do prompt."
 
-    return True, "Prompt Estruturado Excelente! Todos os pilares (Persona, Tarefa, Formato e Delimitadores) foram validados com sucesso."
+    tem_parametro = any(w in p_lower for w in ["temperatura", "temp:", "top-p", "top_p", "0.2", "0.1", "0.3", "parametro"])
+    if not tem_parametro:
+        return False, "Falta Configuração de Parâmetros: Declare explicitamente os parâmetros de IA no prompt (Ex: 'Use Temperatura: 0.2 para precisão...')."
+
+    tem_variavel = any(c in prompt_aluno for c in ["{{", "}}", "{bairro}", "{protocolo}", "{texto}", "{ata}"])
+    if not tem_variavel:
+        return False, "Falta Variável Dinâmica: Inclua marcadores de variáveis dinâmicas no prompt entre chaves (Ex: '{{ata_legislativa}}' ou '{{bairro}}')."
+
+    tem_negativa = any(w in p_lower for w in ["nunca", "não", "nao", "proibido", "recuse", "evite", "sem alucina"])
+    if not tem_negativa:
+        return False, "Falta Regra Negativa (Negative Constraint): Inclua uma restrição imperativa no prompt (Ex: 'NUNCA inclua opiniões pessoais ou informações não contidas no texto')."
+
+    return True, "Prompt Estruturado de Alto Nível Validado! Todos os 7 requisitos (Persona, Tarefa, Formato, Delimitadores, Parâmetros, Variáveis Dinâmicas e Regras Negativas) foram atendidos."
 
 def validar_python_fase0c(codigo_python):
     """
-    Valida se o aluno criou uma ficha digital usando Dicionários e Listas Python.
+    Valida se o aluno criou uma ficha digital usando Dicionários, Listas e Filtro Funcional em Python.
     """
     if not codigo_python or "dicionario" not in codigo_python.lower() and "dict" not in codigo_python.lower() and "{" not in codigo_python:
         return False, "Sua solução deve utilizar a estrutura de Dicionário Python ({'chave': 'valor'})."
@@ -533,11 +554,14 @@ def validar_python_fase0c(codigo_python):
     if "[" not in codigo_python or "]" not in codigo_python:
         return False, "Sua solução deve conter uma Lista de Dicionários Python [...] para armazenar múltiplos registros."
 
+    tem_filtro = any(w in codigo_python for w in ["for ", "if ", "[f for", "filter", "urgencia", "prio", "bairro"])
+    if not tem_filtro:
+        return False, "Falta a Lógica de Filtragem: Escreva um loop 'for' ou List Comprehension em Python que filtre os chamados urgentes (Ex: 'urgentes = [f for f in fichas if f[\"urgencia\"] == \"ALTA\"]')."
+
     try:
         scope = {}
         exec(codigo_python, {"__builtins__": __builtins__}, scope)
         
-        # Procurar por listas no escopo do aluno
         listas_encontradas = [v for v in scope.values() if isinstance(v, list)]
         if not listas_encontradas:
             return False, "Crie uma variável que receba a lista de fichas digitais (Ex: fichas_manutencao = [{...}, {...}])."
@@ -553,9 +577,9 @@ def validar_python_fase0c(codigo_python):
         if len(keys_primeiro) < 3:
             return False, "Cada ficha digital deve conter pelo menos 3 atributos (Ex: 'id', 'bairro', 'descricao')."
 
-        return True, f"Excelente! Ficha digital validada com {len(lista_fichas)} registros estruturados em Python com sucesso."
+        return True, f"Excelente! Ficha digital e filtro em Python validados com {len(lista_fichas)} registros estruturados com sucesso."
     except Exception as e:
-        return False, f"Erro de sintaxe no seu código Python: {str(e)}"
+        return False, f"Erro de sintaxe no código Python: {str(e)}"
 
 # =====================================================================
 # FASES VISUAIS E INTERATIVAS (0D: FLUXOGRAMAS & 0E: SIMULADOR N8N)
@@ -582,10 +606,9 @@ def gerar_codigo_zero_f(matricula_str):
         m_int = 1234
     return f"PRÉ-ALPHA-{(m_int * 29) + 606}"
 
-def validar_skill_fase0f(nome_agente, funcao_agente, skill_name, triggers_sel, regras_sel):
+def validar_skill_fase0f(nome_agente, funcao_agente, skill1_name, triggers1_sel, regras1_sel, skill2_name, triggers2_sel, regras2_sel):
     """
-    Valida a criação de um Agente e Habilidade (Skill) com manifesto YAML (Fase 0F).
-    Exige seleção ativa de perfil coerente, gatilhos de emergência e regras imperativas corretas sem pegadinhas.
+    Valida a criação de um Agente com 2 Habilidades Modulares (Skills) em manifesto YAML (Fase 0F).
     """
     if not nome_agente or len(nome_agente.strip()) < 3:
         return False, "Nome do Agente Incompleto: Defina uma identificação técnica para seu Agente (ex: Agente_Ouvidoria_Emergencia)."
@@ -593,68 +616,53 @@ def validar_skill_fase0f(nome_agente, funcao_agente, skill_name, triggers_sel, r
     if funcao_agente == "Selecione...":
         return False, "Papel do Agente Ausente: Selecione a função operacional do agente no setor público."
 
-    if "Climáticos" not in funcao_agente and "Emergencia" not in nome_agente and "Ouvidoria" not in nome_agente:
-        return False, "Incoerência de Agente: Para lidar com a tempestade de Nova Esperança, o Agente precisa ter papel de 'Orquestrador de Resposta Rápida a Incidentes Climáticos'."
+    # Skill 1 (Emergência)
+    if not skill1_name or len(skill1_name.strip()) < 3:
+        return False, "Nome da Skill #1 Ausente: Defina o identificador da habilidade de emergência (ex: triagem-emergencia-municipal)."
 
-    if not skill_name or len(skill_name.strip()) < 3:
-        return False, "Nome da Skill Ausente: Defina o identificador YAML da habilidade (ex: triagem-emergencia-municipal)."
+    if not triggers1_sel or len(triggers1_sel) < 2:
+        return False, "Skill #1 Gatilhos Insuficientes: Selecione pelo menos 2 gatilhos de crise para a Skill #1."
 
-    if not triggers_sel or len(triggers_sel) < 2:
-        return False, "Gatilhos Insuficientes: Selecione pelo menos 2 gatilhos semânticos (triggers) que ativam a habilidade no YAML."
+    if not regras1_sel or len(regras1_sel) < 3:
+        return False, "Skill #1 Regras Insuficientes: Selecione as 3 regras imperativas essenciais de execução da Skill #1."
 
-    # Verificar se selecionou gatilhos irrelevantes (pegadinhas)
-    gatilhos_invalidos = [t for t in triggers_sel if t in ["pedido_receita_medica", "duvida_horario_onibus"]]
-    if gatilhos_invalidos:
-        return False, f"Gatilho Incoerente Detectado ({', '.join(gatilhos_invalidos)}): Uma habilidade de emergência municipal não deve ser ativada por dúvidas de ônibus ou receitas médicas! Selecione gatilhos de crise como alagamentos ou quedas de árvores."
+    if any("4." in r or "desconto" in r.lower() for r in regras1_sel):
+        return False, "Pegadinha na Skill #1 (Regra 4): Agentes de triagem de emergência NUNCA podem conceder descontos de impostos!"
 
-    # Verificar se inclui os gatilhos válidos de emergência
-    gatilhos_validos = [t for t in triggers_sel if t in ["queda_arvore_fiacao", "alagamento_desabamento", "semaforo_desligado"]]
-    if len(gatilhos_validos) < 2:
-        return False, "Gatilhos de Emergência Ausentes: A skill precisa incluir gatilhos reais da crise, como 'queda_arvore_fiacao', 'alagamento_desabamento' ou 'semaforo_desligado'."
+    # Skill 2 (Atendimento Padrão)
+    if not skill2_name or len(skill2_name.strip()) < 3:
+        return False, "Nome da Skill #2 Ausente: Defina o identificador da habilidade de atendimento de rotina (ex: atendimento-cidadao-padrao)."
 
-    if not regras_sel or len(regras_sel) < 3:
-        return False, "Regras Insuficientes: Selecione as 3 regras imperativas essenciais de execução no corpo da SKILL.md."
+    if not triggers2_sel or len(triggers2_sel) < 2:
+        return False, "Skill #2 Gatilhos Insuficientes: Selecione pelo menos 2 gatilhos de rotina (ex: duvida_horario_onibus, consulta_protocolo) para a Skill #2."
 
-    # Verificar se caiu em pegadinhas nas regras
-    if any("4." in r or "desconto" in r.lower() for r in regras_sel):
-        return False, "Pegadinha Detectada na Regra 4: Agentes de triagem de emergência NUNCA podem ignorar segurança ou conceder descontos de impostos!"
+    if not regras2_sel or len(regras2_sel) < 2:
+        return False, "Skill #2 Regras Insuficientes: Selecione as regras operacionais da Skill #2."
 
-    if any("5." in r or "morse" in r.lower() for r in regras_sel):
-        return False, "Pegadinha Detectada na Regra 5: O agente deve responder com dados claros para a Defesa Civil, e não em código Morse!"
-
-    # Verificar se contem as 3 regras legitimas
-    regras_corretas = [r for r in regras_sel if any(prefix in r for prefix in ["1.", "2.", "3."])]
-    if len(regras_corretas) < 3:
-        return False, "Regras de Execução Incompletas: Selecione as regras 1 (Extração), 2 (Classificação de Risco) & 3 (Alerta 199)."
-
-    return True, f"Agente '{nome_agente.strip()}' e Habilidade 'SKILL.md' ({skill_name.strip()}) criados e validados com sucesso! O manifesto da Skill está 100% operacional."
+    return True, f"Agente '{nome_agente}' e suas 2 Skills Modulares ('{skill1_name}' e '{skill2_name}') validados e compilados com sucesso!"
 
 def validar_fluxograma_fase0d(ordem_nos):
     """
-    Valida a sequência dos nós do fluxograma visual do agente de IA (Fase 0D).
-    Ordem Correta Esperada:
-    1. 'entrada' (Entrada de Dados do Cidadão)
-    2. 'classificador' (Agente LLM Classificador de Risco)
-    3. 'roteamento' (Condicional If/Else de Prioridade)
-    4. 'acao_emergencia' (Alerta Imediato Defesa Civil 199)
-    5. 'acao_ouvidoria' (Registro na Planilha da Ouvidoria)
+    Valida a sequência dos 7 nós do fluxograma visual do agente de IA (Fase 0D).
     """
-    if len(ordem_nos) < 5:
-        return False, "Seu fluxograma está incompleto. Conecte todos os 5 nós para formar o pipeline do agente!"
+    if len(ordem_nos) < 7:
+        return False, f"Seu fluxograma está incompleto ({len(ordem_nos)}/7 nós selecionados). Conecte todos os 7 nós para formar o pipeline seguro do agente!"
 
-    ordem_esperada = ["entrada", "classificador", "roteamento", "acao_emergencia", "acao_ouvidoria"]
+    ordem_esperada = ["entrada", "mascaramento_lgpd", "classificador", "roteamento", "acao_emergencia", "acao_ouvidoria", "escalacao_humana"]
     
-    if ordem_nos[:5] == ordem_esperada or (ordem_nos[0] == "entrada" and ordem_nos[1] == "classificador" and ordem_nos[2] == "roteamento"):
-        return True, "Fluxograma de Agente validado com sucesso! A lógica de inferência, roteamento condicional e despacho foi estabelecida com perfeição."
+    if ordem_nos[:7] == ordem_esperada or (ordem_nos[0] == "entrada" and ordem_nos[1] == "mascaramento_lgpd" and ordem_nos[2] == "classificador"):
+        return True, "Fluxograma de 7 Nós de Agente validado com sucesso! A sequência de Entrada, Anonimização LGPD, Inferência LLM, Roteamento e Transbordo Humano foi estabelecida com perfeição."
     else:
-        return False, "Sequência Lógica Incorreta: O fluxo correto de um agente deve ser: Entrada de Dados ➔ Classificador LLM ➔ Roteador Condicional ➔ Ação Emergencial / Registro Ouvidoria. Reorganize os nós!"
+        return False, "Sequência Lógica Incorreta: O fluxo seguro de um agente deve ser: Entrada de Dados ➔ Mascaramento LGPD ➔ Classificador LLM ➔ Roteador Condicional ➔ Alerta Emergencial ➔ Registro Ouvidoria ➔ Escalação Humana. Reorganize os nós!"
 
-def validar_n8n_fase0e(webhook_ok, ai_model_ok, sheet_ok, email_ok):
+def validar_n8n_fase0e(webhook_ok, lgpd_filter_ok, ai_model_ok, sheet_ok, email_ok):
     """
-    Valida a configuração visual dos 4 nós do n8n (Fase 0E).
+    Valida a configuração visual dos 5 nós do n8n (Fase 0E).
     """
     if not webhook_ok:
         return False, "Nó Webhook Incompleto: Defina o método HTTP como 'POST' e a rota de recepção como '/ouvidoria'."
+    if not lgpd_filter_ok:
+        return False, "Nó Filtro LGPD Incompleto: Ative o mascaramento prévio de CPF e Nome do cidadão antes da nuvem."
     if not ai_model_ok:
         return False, "Nó Gemini AI Incompleto: Selecione a ação 'Text Analysis' e o modelo 'Google Gemini 2.5'."
     if not sheet_ok:
@@ -662,7 +670,7 @@ def validar_n8n_fase0e(webhook_ok, ai_model_ok, sheet_ok, email_ok):
     if not email_ok:
         return False, "Nó Gmail/Email Incompleto: Configure o gatilho de notificação automática para o Secretário de Obras."
 
-    return True, "Workflow n8n de Automação Pública Executado com Sucesso! Todos os 4 nós foram integrados e validados no pipeline."
+    return True, "Workflow n8n de Automação Pública com Filtro LGPD Executado com Sucesso! Todos os 5 nós foram integrados e validados no pipeline."
 
 _MASCOTE_B64_CACHE = None
 

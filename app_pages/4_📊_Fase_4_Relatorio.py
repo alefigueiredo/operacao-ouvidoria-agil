@@ -124,7 +124,7 @@ if btn_enviar:
     if "[crie aqui" in relatorio_user.lower() or "[descreva aqui" in relatorio_user.lower() or "[liste" in relatorio_user.lower() or "[escreva" in relatorio_user.lower():
         st.error("❌ Preencha os campos entre colchetes no relatório antes de submeter!")
     else:
-        sucesso, msg = utils.validar_relatorio_fase4_rigoroso(relatorio_user, total_alta_esperado=6)
+        sucesso, msg = utils.validar_relatorio_fase4_rigoroso(relatorio_user, st.session_state.matricula, total_alta_esperado=6)
         
         if sucesso:
             st.session_state.fase4_concluida = True

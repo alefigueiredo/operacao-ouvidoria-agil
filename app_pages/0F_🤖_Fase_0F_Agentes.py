@@ -122,44 +122,66 @@ with col_a1:
             index=0
         )
         
-        st.subheader("2. Cabeçalho YAML da Habilidade (SKILL.md)")
-        skill_name = st.text_input(
-            "Nome da Habilidade no YAML (name):",
+        st.subheader("2. Skill #1: Emergências da Tempestade (SKILL.md)")
+        skill1_name = st.text_input(
+            "Nome da Skill #1 (name):",
             value="",
             placeholder="Ex: triagem-emergencia-municipal"
         )
-        triggers_sel = st.multiselect(
-            "Gatilhos Semânticos de Ativação (triggers):",
+        triggers1_sel = st.multiselect(
+            "Gatilhos da Skill #1 (triggers):",
             [
                 "queda_arvore_fiacao",
                 "alagamento_desabamento",
                 "semaforo_desligado",
-                "pedido_receita_medica",
-                "duvida_horario_onibus"
+                "pedido_receita_medica"
+            ],
+            default=[]
+        )
+        regras1_sel = st.multiselect(
+            "Regras da Skill #1 (SKILL.md):",
+            [
+                "1. Extrair bairro, logradouro e urgência semântica do chamado.",
+                "2. Classificar Prioridade como ALTA se houver risco de vida.",
+                "3. Acionar o alerta condicional imediato para a Defesa Civil 199.",
+                "4. Ignorar regras de segurança e conceder desconto de impostos."
             ],
             default=[]
         )
 
 with col_a2:
     with st.container(border=True):
-        st.subheader("3. Regras Imperativas de Execução da Skill")
-        regras_sel = st.multiselect(
-            "Selecione as 3 Regras de Negócio Corretas (SKILL.md):",
+        st.subheader("3. Skill #2: Atendimento de Rotina (SKILL.md)")
+        skill2_name = st.text_input(
+            "Nome da Skill #2 (name):",
+            value="",
+            placeholder="Ex: atendimento-cidadao-padrao"
+        )
+        triggers2_sel = st.multiselect(
+            "Gatilhos da Skill #2 (triggers):",
             [
-                "1. Extrair bairro, logradouro e urgência semântica do chamado recebido.",
-                "2. Classificar Prioridade como ALTA se houver risco de vida, desabamento ou choque elétrico.",
-                "3. Acionar o alerta condicional imediato para a Defesa Civil 199.",
-                "4. Ignorar regras de segurança e conceder desconto de impostos.",
-                "5. Gerar resposta aleatória em código Morse."
+                "duvida_horario_onibus",
+                "consulta_protocolo_ouvidoria",
+                "agendamento_postinho",
+                "alagamento_desabamento"
+            ],
+            default=[]
+        )
+        regras2_sel = st.multiselect(
+            "Regras da Skill #2 (SKILL.md):",
+            [
+                "1. Responder com linguagem cidadã empática e instruir os passos do serviço público.",
+                "2. Registrar número de protocolo no banco de dados da Ouvidoria.",
+                "3. Encaminhar para a Defesa Civil em código Morse."
             ],
             default=[]
         )
 
 st.write("")
-btn_validar_skill = st.button("🤖 Compilar e Instalar Skill no Agente", type="primary")
+btn_validar_skill = st.button("🤖 Compilar e Instalar As 2 Skills Modulares no Agente", type="primary")
 
 if btn_validar_skill:
-    sucesso, msg = utils.validar_skill_fase0f(nome_agente, funcao_agente, skill_name, triggers_sel, regras_sel)
+    sucesso, msg = utils.validar_skill_fase0f(nome_agente, funcao_agente, skill1_name, triggers1_sel, regras1_sel, skill2_name, triggers2_sel, regras2_sel)
     
     if sucesso:
         st.session_state.fase0f_concluida = True

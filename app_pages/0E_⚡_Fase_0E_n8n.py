@@ -78,9 +78,7 @@ utils.render_painel_ajuda_cronometro("0E", st.session_state)
 with st.container(border=True):
     st.subheader("🛠️ O Cenário Real da Oficina de n8n")
     st.markdown("""
-    Conforme o guia de exercícios práticos do curso (*Forms + IA + Planilhas + E-mail*), a prefeitura necessita de um pipeline automatizado no **n8n** para receber chamados da população, classificar via IA e atualizar planilhas e e-mails de resposta.
-    
-    Configure os **4 Nós de Automação Visual** do n8n abaixo selecionando os parâmetros corretos em cada caixa:
+    Conforme a política de governança de IA pública, o workflow do **n8n** deve possuir **5 Nós de Automação Visual** para capturar, anonimizar via LGPD, classificar via IA, armazenar e notificar.
     """)
 
 col_n1, col_n2 = st.columns(2)
@@ -99,7 +97,17 @@ with col_n1:
 
     st.markdown("""
     <div class='n8n-node'>
-        <div class='n8n-title'>🧠 NÓ 2: Google Gemini AI (Processador LLM)</div>
+        <div class='n8n-title'>🛡️ NÓ 2: Privacy Anonymizer (Filtro LGPD)</div>
+        Mascaramento automático de CPF, Nome e Telefone antes de enviar à API externa.
+    </div>
+    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        lgpd_mask_action = st.selectbox("Ação do Filtro LGPD:", ["Selecione...", "Manter dados pessoais abertos", "Mascarar CPF/Nome/Telefone com HASH", "Descartar payload"], index=0)
+        lgpd_filter_ok = ("Mascarar" in lgpd_mask_action)
+
+    st.markdown("""
+    <div class='n8n-node'>
+        <div class='n8n-title'>🧠 NÓ 3: Google Gemini AI (Processador LLM)</div>
         Análise semântica e extração de prioridade dos chamados.
     </div>
     """, unsafe_allow_html=True)
@@ -111,7 +119,7 @@ with col_n1:
 with col_n2:
     st.markdown("""
     <div class='n8n-node'>
-        <div class='n8n-title'>📊 NÓ 3: Google Sheets (Planilha de Controle)</div>
+        <div class='n8n-title'>📊 NÓ 4: Google Sheets (Planilha de Controle)</div>
         Registro automático das colunas de Bairro e Prioridade.
     </div>
     """, unsafe_allow_html=True)
@@ -122,7 +130,7 @@ with col_n2:
 
     st.markdown("""
     <div class='n8n-node'>
-        <div class='n8n-title'>✉️ NÓ 4: Gmail / Notificação (E-mail Automático)</div>
+        <div class='n8n-title'>✉️ NÓ 5: Gmail / Notificação (E-mail Automático)</div>
         Disparo de alerta imediato para a Secretaria de Obras.
     </div>
     """, unsafe_allow_html=True)
@@ -132,13 +140,13 @@ with col_n2:
         email_ok = ("ALTA" in email_trigger and "@" in email_target and "novaesperanca" in email_target)
 
 st.write("")
-btn_executar_n8n = st.button("⚡ Executar e Simular Pipeline do n8n", type="primary")
+btn_executar_n8n = st.button("⚡ Executar e Simular Pipeline do n8n (5 Nós)", type="primary")
 
 if btn_executar_n8n:
-    if http_method == "Selecione..." or ai_action == "Selecione..." or sheet_operation == "Selecione..." or email_trigger == "Selecione...":
-        st.warning("⚠️ Preencha as configurações de todos os 4 nós do n8n antes de simular a execução!")
+    if http_method == "Selecione..." or lgpd_mask_action == "Selecione..." or ai_action == "Selecione..." or sheet_operation == "Selecione..." or email_trigger == "Selecione...":
+        st.warning("⚠️ Preencha as configurações de todos os 5 nós do n8n antes de simular a execução!")
     else:
-        sucesso, msg = utils.validar_n8n_fase0e(webhook_ok, ai_model_ok, sheet_ok, email_ok)
+        sucesso, msg = utils.validar_n8n_fase0e(webhook_ok, lgpd_filter_ok, ai_model_ok, sheet_ok, email_ok)
         
         if sucesso:
             st.session_state.fase0e_concluida = True

@@ -78,6 +78,24 @@ QUESTOES_BASE = [
             "Temperatura ajusta a velocidade do processador; Top-P limita a quantidade máxima de caracteres por palavra do texto.",
             "Temperatura zera o contexto da conversa; Top-P converte automaticamente a saída do modelo para outros idiomas."
         ]
+    },
+    {
+        "id": "q5",
+        "pergunta": "Ao enviar dados de solicitações de cidadãos para APIs comerciais de IA (como Gemini ou ChatGPT), qual é a conduta obrigatória segundo a LGPD no setor público?",
+        "correta": "Fazer o Mascaramento / Anonimização prévia de nomes, CPF e dados pessoais sensíveis antes do envio para a nuvem.",
+        "incorretas": [
+            "Enviar todos os dados pessoais abertos, pois a prefeitura tem isenção total sobre a LGPD em casos de emergência.",
+            "Deletar o banco de dados do município para evitar vazamentos na API externa."
+        ]
+    },
+    {
+        "id": "q6",
+        "pergunta": "Como prevenir que respostas com alucinações (informações falsas inventadas pela IA) afetem o atendimento oficial da ouvidoria?",
+        "correta": "Manter Supervisão Humana (Human-in-the-Loop) e exigir pareceres revisados antes de emitir comunicados oficiais.",
+        "incorretas": [
+            "Aumentar a Temperatura para 1.0 para que a IA invente justificativas jurídicas mais convincentes.",
+            "Desativar todos os filtros de segurança para acelerar o tempo de resposta do servidor."
+        ]
     }
 ]
 
@@ -114,11 +132,13 @@ if sub_quiz:
     ans_q2 = respostas.get("q2")
     ans_q3 = respostas.get("q3")
     ans_q4 = respostas.get("q4")
+    ans_q5 = respostas.get("q5")
+    ans_q6 = respostas.get("q6")
 
-    if ans_q1 is None or ans_q2 is None or ans_q3 is None or ans_q4 is None:
-        st.warning("⚠️ Marque uma alternativa para cada uma das 4 questões antes de submeter!")
+    if any(ans is None for ans in [ans_q1, ans_q2, ans_q3, ans_q4, ans_q5, ans_q6]):
+        st.warning("⚠️ Marque uma alternativa para cada uma das 6 questões de estudo de caso antes de submeter!")
     else:
-        sucesso, msg = utils.validar_quiz_fase0a(ans_q1, ans_q2, ans_q3, ans_q4)
+        sucesso, msg = utils.validar_quiz_fase0a(ans_q1, ans_q2, ans_q3, ans_q4, ans_q5, ans_q6)
         
         if sucesso:
             st.session_state.fase0a_concluida = True

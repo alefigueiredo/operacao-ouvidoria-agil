@@ -76,36 +76,42 @@ with st.container(border=True):
     st.markdown("""
     Um **Agente de IA Generativa** eficiente no setor público não é apenas uma caixa de chat; é um **pipeline de decisão orquestrado**.
     
-    Organize os **5 nós visuais** abaixo na sequência lógica correta de execução para garantir que chamados de emergência acionem a Defesa Civil e chamados normais alimentem a Ouvidoria:
+    Organize os **7 nós visuais** abaixo na sequência lógica correta de execução para garantir que dados sensíveis sejam anonimizados pela LGPD, chamados de emergência acionem a Defesa Civil e haja escalação humana:
     """)
 
 col_f0d_a, col_f0d_b = st.columns([1, 1])
 
 NOS_DISPONIVEIS = {
     "entrada": "📥 Entrada de Dados (Formulário / Webhook do Cidadão)",
+    "mascaramento_lgpd": "🛡️ Filtro de Privacidade & Anonimização LGPD",
     "classificador": "🧠 Agente LLM Classificador de Risco (Gemini 2.5)",
     "roteamento": "🔀 Roteador Condicional (If Risco == ALTA)",
     "acao_emergencia": "🚨 Alerta Imediato Defesa Civil 199 (SMS/Chamada)",
-    "acao_ouvidoria": "📋 Registro de Manutenção (Planilha Ouvidoria)"
+    "acao_ouvidoria": "📋 Registro de Manutenção (Planilha Ouvidoria)",
+    "escalacao_humana": "👨‍💼 Transbordo & Escalação Humana (Ouvidor Geral)"
 }
+
+keys_list = list(NOS_DISPONIVEIS.keys())
 
 with col_f0d_a:
     with st.container(border=True):
-        st.subheader("⚙️ Montagem do Fluxograma (Selecione a Sequência de Nós)")
+        st.subheader("⚙️ Montagem do Fluxograma (Selecione a Sequência dos 7 Nós)")
         
-        n1 = st.selectbox("1º Nó do Pipeline (Gatilho Inicial):", ["Selecione...", "classificador", "entrada", "roteamento", "acao_emergencia", "acao_ouvidoria"], format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
-        n2 = st.selectbox("2º Nó do Pipeline (Processamento IA):", ["Selecione...", "entrada", "classificador", "roteamento", "acao_ouvidoria", "acao_emergencia"], format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
-        n3 = st.selectbox("3º Nó do Pipeline (Decisão Lógica):", ["Selecione...", "roteamento", "classificador", "entrada", "acao_emergencia", "acao_ouvidoria"], format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
-        n4 = st.selectbox("4º Nó do Pipeline (Ramificação de Emergência):", ["Selecione...", "acao_emergencia", "roteamento", "classificador", "entrada", "acao_ouvidoria"], format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
-        n5 = st.selectbox("5º Nó do Pipeline (Ramificação de Ouvidoria):", ["Selecione...", "acao_ouvidoria", "acao_emergencia", "roteamento", "classificador", "entrada"], format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n1 = st.selectbox("1º Nó (Gatilho Inicial):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n2 = st.selectbox("2º Nó (Privacidade & LGPD):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n3 = st.selectbox("3º Nó (Processamento IA):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n4 = st.selectbox("4º Nó (Decisão Lógica):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n5 = st.selectbox("5º Nó (Ramificação Emergencial):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n6 = st.selectbox("6º Nó (Ramificação Ouvidoria):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
+        n7 = st.selectbox("7º Nó (Transbordo & Supervisão Humana):", ["Selecione..."] + keys_list, format_func=lambda x: NOS_DISPONIVEIS.get(x, x))
         
-        btn_validar_fluxo = st.button("🚀 Validar e Executar Fluxograma de IA", type="primary")
+        btn_validar_fluxo = st.button("🚀 Validar e Executar Fluxograma de 7 Nós", type="primary")
 
 with col_f0d_b:
     with st.container(border=True):
         st.subheader("👁️ Pré-visualização do Diagrama de Agentes")
         
-        ordem_selecionada = [n for n in [n1, n2, n3, n4, n5] if n != "Selecione..."]
+        ordem_selecionada = [n for n in [n1, n2, n3, n4, n5, n6, n7] if n != "Selecione..."]
         
         if not ordem_selecionada:
             st.info("Selecione a sequência dos nós à esquerda para visualizar o diagrama interativo.")
