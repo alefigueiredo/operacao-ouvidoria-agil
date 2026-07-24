@@ -191,20 +191,31 @@ if btn_validar_skill:
         st.success(f"✨ {msg}")
         st.balloons()
         
-        st.markdown("### 📄 Manifesto SKILL.md Gerado e Validado:")
-        yaml_triggers = "\n".join([f"  - {t}" for t in triggers_sel])
-        markdown_regras = "\n".join([f"- {r}" for r in regras_sel])
+        st.markdown("### 📄 Manifesto SKILL.md Gerado e Validado (2 Skills Modulares):")
+        yaml_triggers1 = "\n".join([f"  - {t}" for t in triggers1_sel])
+        markdown_regras1 = "\n".join([f"- {r}" for r in regras1_sel])
+        yaml_triggers2 = "\n".join([f"  - {t}" for t in triggers2_sel])
+        markdown_regras2 = "\n".join([f"- {r}" for r in regras2_sel])
         
         skill_file_content = f"""---
-name: {skill_name}
-description: Habilidade autônoma para {funcao_agente}
+# SKILL #1: EMERGÊNCIA
+name: {skill1_name}
 agent_target: {nome_agente}
 triggers:
-{yaml_triggers}
+{yaml_triggers1}
 ---
+# Instruções de Execução:
+{markdown_regras1}
 
-# Instruções de Execução da Habilidade
-{markdown_regras}
+---
+# SKILL #2: ATENDIMENTO PADRÃO
+name: {skill2_name}
+agent_target: {nome_agente}
+triggers:
+{yaml_triggers2}
+---
+# Instruções de Execução:
+{markdown_regras2}
 """
         st.markdown(f"<div class='skill-code-box'>{skill_file_content}</div>", unsafe_allow_html=True)
         
