@@ -1075,6 +1075,14 @@ def obter_relatorio_acessos_csv():
     except Exception:
         return None
 
+def deletar_progresso_estudante(email_str):
+    caminho = obter_caminho_progresso(email_str)
+    if os.path.exists(caminho):
+        try:
+            os.remove(caminho)
+        except Exception:
+            pass
+
 def carregar_progresso_estudante(email_str, session_state):
     caminho = obter_caminho_progresso(email_str)
     if not os.path.exists(caminho):

@@ -141,9 +141,18 @@ with st.sidebar:
         if key_input != st.session_state.openrouter_key:
             st.session_state.openrouter_key = key_input
             
-        if st.button("🚪 Sair / Resetar Sessão"):
-            st.session_state.clear()
-            st.rerun()
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("🚪 Sair", use_container_width=True):
+                st.session_state.clear()
+                st.rerun()
+        with col_btn2:
+            if st.button("🔄 Resetar Teste", help="Deleta o progresso salvo deste e-mail para testar os bloqueios de fase do zero", use_container_width=True):
+                email = st.session_state.get("matricula")
+                if email:
+                    utils.deletar_progresso_estudante(email)
+                st.session_state.clear()
+                st.rerun()
     else:
         st.info("👋 Identifique-se na página inicial para começar a trilha.")
 
