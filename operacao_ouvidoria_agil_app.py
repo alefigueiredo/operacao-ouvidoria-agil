@@ -248,6 +248,15 @@ def home_page_view():
                     st.success(st.session_state.msg_boas_vindas)
                 else:
                     st.success(f"✅ Logado como: **{st.session_state.nome}** (E-mail: {st.session_state.matricula})")
+                
+                st.write("")
+                st.caption("🧪 **Área de Testes do Instrutor:**")
+                if st.button("🔄 Resetar Meu Progresso (Testar do Zero)", type="secondary", use_container_width=True, help="Deleta o progresso salvo deste e-mail para testar as travas do zero"):
+                    email = st.session_state.get("matricula")
+                    if email:
+                        utils.deletar_progresso_estudante(email)
+                    st.session_state.clear()
+                    st.rerun()
                 st.markdown("""
                 **Como Progredir nas Fases:**
                 1. Clique no botão abaixo para ir direto para a **Fase 0A: Fundamentos**.
